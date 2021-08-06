@@ -1,0 +1,190 @@
+<!--
+Assignment: M07 - 3D Map
+Author : YI Chen
+Date: March 24th
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Halifax map</title>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico"/>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/themes/light/main.css"/>
+    <script src="https://js.arcgis.com/4.18/"></script>
+
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        /*    #map {
+                width: 100%;
+                height: 600px;
+            }*/
+
+        #myposition > .ol-mouse-position {
+            position: relative;
+        }
+
+        #copyright {
+            background-color: lightblue;
+            text-align: right;
+            margin-top: 5px;
+            padding-top: 20px;
+            padding-bottom: 5px;
+            padding-right: 5px;
+            left: 10px;
+            font-weight: bold;
+            color: darkblue;
+        }
+
+        .title-logo h1 {
+            position: relative;
+            display: inline;
+            color: darkblue;
+        }
+
+        .title-logo img {
+            float: right;
+            width: 400px;
+        }
+
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 800px;
+            width: 100%;
+        }
+    </style>
+
+
+</head>
+<body>
+
+<!--Title, Logo, Map, Cursor Position-->
+<div class="title-logo">
+    <h1>Halifax Map of leisure</h1>
+    <img src="images/Cogs.png">
+</div>
+
+<!--<div id='map'></div>-->
+<div id="viewDiv"></div>
+<div id = "myposition"></div>
+<!--Change your code to use Leaflet and ensure your center coordinates and your starting zoom level is appropriate for the context of the map.-->
+<script>
+    require([
+        "esri/config",
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/widgets/Home",
+        "esri/widgets/Legend",
+        "esri/widgets/AreaMeasurement2D",
+        "esri/widgets/BasemapToggle"
+    ], function (
+        esriConfig,
+        Map,
+        MapView,
+        FeatureLayer,
+        Home,
+        Legend,
+        AreaMeasurement2D,
+        BasemapToggle
+
+    ) {
+
+        esriConfig.apiKey = "AAPK3d8d171c28db4b0fbc5ab2452e7c6c94mdgySXj9ESxLegIQtQggr945kjG9Gk-8cTVnvpkKxz8lqDqLFSGmG87WCp14F-WU";
+
+        const map = new Map({
+            basemap: "arcgis-topographic" // Basemap layer service
+        });
+
+        const view = new MapView({
+            map: map,
+            center: [-63.5752, 44.6488 ], // Longitude, latitude
+            zoom: 13, // Zoom level
+            container: "viewDiv" // Div element
+        });
+
+        // Fires `pointer-move` event when user clicks on "Shift"
+        // key and moves the pointer on the view.
+        view.on('pointer-move', function(event){
+            let point = view.toMap({x: event.x, y: event.y});
+            document.querySelector('#myposition').innerHTML = point.longitude +'. ' + point.latitude
+            console.log(event)
+            /*bufferPoint(point);*/
+        });
+
+        const parkLayers = new FeatureLayer({
+            url: "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/arcgis/rest/services/HRM_Parks_2/FeatureServer/0/"
+        });
+        map.add(parkLayers);
+
+        //Trails feature layer (lines)
+        const trails = new FeatureLayer({
+            url: "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/arcgis/rest/services/Trails/FeatureServer/0/"
+        });
+        map.add(trails);
+
+        //Trails feature layer (lines)
+        const boatLayer = new FeatureLayer({
+            url: "https://services2.arcgis.com/11XBiaBYA9Ep0yNJ/arcgis/rest/services/Boat_Facilities/FeatureServer/0/"
+        });
+        map.add(boatLayer);
+
+        let homeBtn = new Home({
+            view: view
+        });
+
+        // Add the home button to the top left corner of the view
+        view.ui.add(homeBtn, "top-left");
+
+        let legend = new Legend({
+            view: view,
+            layerInfos: [{
+                layer: parkLayers,
+                title: "Halifax Park"
+            },
+            {
+                layer: trails,
+                title: "Halifax trails"
+            },
+            {
+                layer: boatLayer,
+                title: "Halifax Boat"
+            }]
+        });
+
+        view.ui.add(legend, "bottom-right");
+
+        // To add the AreaMeasurement2D widget to your map
+        let measurementWidget = new AreaMeasurement2D({
+            view: view
+        });
+        view.ui.add(measurementWidget, "top-right");
+
+        let basemapToggle = new BasemapToggle({
+            view: view,  // The view that provides access to the map's "streets-vector" basemap
+            nextBasemap: "hybrid"  // Allows for toggling to the "hybrid" basemap
+        });
+        view.ui.add(basemapToggle, {
+            position: "top-right"
+        });
+
+
+    });
+</script>
+
+
+<div id="copyright">
+    <p> CopyRight &#169 2021 Yi Chen, IT Programming Cogs, NSCC. All Rights Reserved.</p>
+</div>
+</body>
+</html>

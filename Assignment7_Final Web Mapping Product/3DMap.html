@@ -1,0 +1,251 @@
+<!--
+Assignment: M07 - 3D Map
+Author : YI Chen
+Date: April 12th
+ -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>3D map</title>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico"/>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.18/esri/css/main.css"/>
+    <script src="https://js.arcgis.com/4.18/"></script>
+
+
+    <style>
+        .map{
+            height: 80vh;
+            width: 70vw;
+            margin: auto;
+        }
+
+        #copyright {
+            background-color: lightblue;
+            text-align: right;
+            margin-top: 5px;
+            padding-top: 20px;
+            padding-bottom: 5px;
+            padding-right: 5px;
+            left: 10px;
+            font-weight: bold;
+            color: darkblue;
+        }
+
+        .title-logo h1 {
+            position: relative;
+            display: inline;
+            color: darkblue;
+        }
+
+        .title-logo img {
+            float: right;
+            width: 400px;
+        }
+
+
+    </style>
+
+
+</head>
+<body>
+
+    <!--Title, Logo, Map, Cursor Position-->
+    <div class="title-logo">
+        <h1>Halifax Map of leisure</h1>
+        <img src="images/Cogs.png">
+    </div>
+
+    <!--<div id='map'></div>-->
+    <div id="myMap" class="map"></div>
+    <div id = "myposition"></div>
+    <div id="legendDiv"></div>
+
+    <!--Change your code to use Leaflet and ensure your center coordinates and your starting zoom level is appropriate for the context of the map.-->
+    <script>
+        require([
+            "esri/config",
+            "esri/Map",
+            "esri/views/SceneView",
+            "esri/layers/FeatureLayer",
+            "esri/widgets/Home",
+
+
+        ], function (
+            esriConfig,
+            Map,
+            SceneView,
+            FeatureLayer,
+            Home,
+
+        ) {
+
+            esriConfig.apiKey = "AAPK3d8d171c28db4b0fbc5ab2452e7c6c94mdgySXj9ESxLegIQtQggr945kjG9Gk-8cTVnvpkKxz8lqDqLFSGmG87WCp14F-WU";
+
+            const map = new Map({
+                basemap: "arcgis-imagery", // Basemap layer service
+                ground: "world-elevation"
+            });
+
+
+            // Create a basic SceneView instance with a basemap and world elevation
+            const view = new SceneView({
+
+                // The id of a DOM element (may also be an actual DOM element)
+                container: "myMap",
+
+                // An instance of Map or WebScene
+                map: map,
+
+                camera: {
+                    position: {
+                        x: -120.077940, // lon
+                        y: 49.300000,   // lat
+                        z: 2000 // elevation in meters
+                    },
+                    tilt: 75
+                }
+            });
+
+            // Fires `pointer-move` event when user clicks on "Shift"
+            // key and moves the pointer on the view.
+            view.on('pointer-move', function(event){
+                let point = view.toMap({x: event.x, y: event.y});
+                if(point != null){
+                    document.querySelector('#myposition').innerHTML = point.longitude.toFixed(4) + ', ' + point.latitude.toFixed(4) + ', ' + point.z.toFixed(0) + 'm';
+                    console.log(event)
+                    /*bufferPoint(point);*/
+                }
+                else{
+                    document.querySelector('#myposition').innerHTML = '';
+                }
+
+            });
+
+
+
+            // Typical usage
+            // Create featurelayer from client-side graphics
+            const layer = new FeatureLayer({
+
+                fields: [
+                    {
+                        name: "ObjectID",
+                        alias: "ObjectID",
+                        type: "oid"
+                     },
+                    {
+                        name: "type",
+                        alias: "Type",
+                        type: "string"
+                    },
+                    {
+                        name: "name",
+                        alias: "Name",
+                        type: "string"
+                    },
+                    {
+                        name: "height",
+                        alias: "Height",
+                        type: "integer"
+                    }
+                    ],
+
+                    objectIdField: "ObjectID", // inferred from fields array if not specified
+                    geometryType: "point", // geometryType and spatialReference are inferred from the first feature
+                                          // in the source array if they are not specified.
+
+
+                    spatialReference: { wkid: 4326 },
+                    title:"Point of Interest",
+
+                    // a default simple renderer will be applied if not set.
+                    renderer: {
+                        type: "unique-value",  // autocasts as new UniqueValueRenderer()
+                        field: "type",
+                        uniqueValueInfos:[
+                            {
+                                value:"Antenna",
+                                symbol:{
+                                    type: "web-style",  // autocasts as new WebStyleSymbol()
+                                    styleName: "EsriInfrastructureStyle",
+                                    name: "Radio_Antenna"
+                                }
+                            },
+                            {
+                                value: "Airplane_Private_With_Wheels",
+                                symbol:{
+                                    type: "web-style",
+                                    styleName: "EsriRealisticSignsandSignalsStyle",
+                                    name: "Speed_Limit_-_70_mph"
+                                }
+
+                            }
+                        ],
+                        visualVariables:[
+                            {
+                                type: "size",
+                                field: "height",
+                                axis:"height",
+                                valueUnit: "meters"
+                            }
+                        ]
+                    },
+                    source:[
+                        {
+                            geometry:{
+                                type:"point",
+                                x:-120.0979,
+                                y:49.3419
+
+                            },
+                            attributes:{
+                                ObjectID:1,
+                                type:"Antenna",
+                                name:" My beacon to ...",
+                                height:"200"
+                            }
+                        }
+
+                    ],
+                    popupTemplate:{
+                        title: "Point of Interest",
+                        content:[
+                            {
+                                type:"fields",
+                                fieldInfos:[
+                                    {
+                                        fieldName:"name",
+                                        label:"Message"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+            })
+            map.add(layer);
+
+
+            let homeBtn = new Home({
+                view: view
+            });
+
+            // Add the home button to the top left corner of the view
+            view.ui.add(homeBtn, "top-left");
+
+
+
+        });
+    </script>
+
+
+<div id="copyright">
+    <p> CopyRight &#169 2021 Yi Chen, IT Programming COGS, NSCC. All Rights Reserved.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!--
+Author: Yi Chen
+Source: OpenLayers 3
+Data: 2021-03-11
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenLayers 3</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/css/ol.css" type="text/css">
+    <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.5.0/build/ol.js"></script>
+
+    <style>
+        .map {
+            height: 800px;
+            width: 100%;
+        }
+        #myposition > .ol-mouse-position{
+            position:relative;
+        }
+        #copyright {
+            background-color: lightblue;
+            text-align: right;
+            margin-top: 5px;
+            padding-top: 20px;
+            padding-bottom: 5px;
+            padding-right: 5px;
+            left: 10px;
+            font-weight: bold;
+            color:darkblue;
+        }
+
+        .title-logo h1{
+            position: relative;
+            display: inline;
+        }
+
+        .title-logo img{
+            float: right;
+            width: 400px;
+        }
+    </style>
+
+</head>
+
+
+<body>
+
+    <div class="title-logo">
+        <h1>CIUDAD DE MEXICO </h1>
+        <img  src="images/Cogs.png">
+    </div>
+
+    <div id="map" class="map"></div>
+    <div id = "copyright">
+        <p > CopyRight &#169 2021 Yi Chen, IT Programming Cogs, NSCC. All Rights Reserved.</p>
+
+    </div>
+    <br/>
+    <div id = "myposition"></div>
+    <script>
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+
+                new ol.layer.Tile({
+                   /* source: new ol.source.OSM({
+                        url: "http://{a-c}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"
+                            })*/
+                    source: new ol.source.Stamen({
+                        layer: 'watercolor' //options: terrain toner watercolor
+                    })
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([-99.133209, 19.432608]),
+                zoom:10
+            })
+
+
+        });
+
+        var mousePosition = new ol.control.MousePosition({
+            coordinateFormat: ol.coordinate.createStringXY(2),
+            projection: 'EPSG:4326',
+            target: document.getElementById('myposition')
+            /*undefinedHTML: '&nbsp;'*/
+        });
+
+        map.addControl(mousePosition);
+    </script>
+
+</body>
+</html>
